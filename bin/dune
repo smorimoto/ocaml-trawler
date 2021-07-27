@@ -1,0 +1,6 @@
+(executable
+ (public_name update)
+ (name update)
+ (libraries trawler base lwt bos fpath)
+ (preprocess
+  (pps ppx_yojson_conv)))
