@@ -1,5 +1,13 @@
 (library
  (name trawler)
- (libraries base lwt lwt.unix calendar yojson github-unix)
+ (libraries
+  base
+  fpath
+  calendar
+  github-unix
+  lwt
+  lwt.unix
+  ppx_yojson_conv_lib
+  yojson)
  (preprocess
-  (pps ppx_yojson_conv)))
+  (pps ppx_deriving.make ppx_yojson_conv)))

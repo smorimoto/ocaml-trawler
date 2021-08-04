@@ -1,8 +1,0 @@
-(rule
- (alias update)
- (action
-  (progn
-   (with-stdout-to
-    data.out
-    (run %{bin:update}))
-   (diff? ./dataset/data.json data.out))))

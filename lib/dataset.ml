@@ -1,5 +1,18 @@
-type t =
-  { last_updated : string
-  ; repository_urls : string list
+open Base
+
+type repository =
+  { owner : string
+  ; name : string
+  ; fork : bool
+  ; clone_url : string
+  ; default_branch : string option
+  ; created_at : string
+  ; updated_at : string
   }
-[@@deriving yojson]
+[@@deriving make, yojson]
+
+type t =
+  { updated_at : string
+  ; repository_list : repository list
+  }
+[@@deriving make, yojson]

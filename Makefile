@@ -4,8 +4,4 @@ build:
 
 .PHONY: update
 update:
-	dune build @update
-
-.PHONY: promote
-promote:
-	dune promote
+	dune exec -- update

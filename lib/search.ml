@@ -17,9 +17,7 @@ let rec get_all_results ~start ~finish ~token =
   let* repository_search_total_count =
     match List.hd results with
     | Some hd -> Lwt.return hd.repository_search_total_count
-    | None ->
-      raise_s
-        (Sexp.List [ Sexp.Atom "Repository_search_total_count not found" ])
+    | None -> failwith "Repository_search_total_count not found"
   in
   let diff = CalendarLib.Date.sub finish start in
   if repository_search_total_count > 1000 then

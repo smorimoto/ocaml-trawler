@@ -27,14 +27,13 @@
  (description "Trawler")
  (depends
   base
-  parsexp
-  lwt
+  bos
+  calendar
   conf-libev
-  tls
   github
   github-unix
-  calendar
-  uri
-  yojson
+  lwt
+  ppx_deriving
   ppx_yojson_conv
-  bos))
+  tls
+  yojson))

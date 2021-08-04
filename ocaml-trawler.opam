@@ -11,17 +11,16 @@ bug-reports: "https://github.com/smorimoto/ocaml-trawler/issues"
 depends: [
   "dune" {>= "2.9"}
   "base"
-  "parsexp"
-  "lwt"
+  "bos"
+  "calendar"
   "conf-libev"
-  "tls"
   "github"
   "github-unix"
-  "calendar"
-  "uri"
-  "yojson"
+  "lwt"
+  "ppx_deriving"
   "ppx_yojson_conv"
-  "bos"
+  "tls"
+  "yojson"
   "odoc" {with-doc}
 ]
 build: [

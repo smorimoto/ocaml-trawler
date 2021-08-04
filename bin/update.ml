@@ -2,49 +2,63 @@ open Base
 open Trawler
 open Lwt.Syntax
 
-let read_dataset file =
-  Lwt.catch
-    (fun _ ->
-      let* channel = Lwt_io.open_file ~mode:Lwt_io.Input file in
-      let* content = Lwt_io.read channel in
-      let* () = Lwt_io.close channel in
-      let dataset = Dataset.t_of_yojson (Yojson.Safe.from_string content) in
-      Lwt.return_some dataset)
-    (fun _ -> Lwt.return_none)
-
-let main =
+let path =
   let project_root = Rresult.R.get_ok (Bos.OS.Dir.current ()) in
-  let dataset_json =
-    let json_path = Fpath.v "dataset/data.json" in
-    Fpath.(project_root // json_path)
-  in
-  let* json = read_dataset (Fpath.to_string dataset_json) in
+  let json_path = Fpath.v "dataset/data.json" in
+  Fpath.(project_root // json_path)
+
+let search () =
+  let* json = File.read_dataset path in
   let start =
     match json with
-    | Some { last_updated; _ } ->
-      CalendarLib.Printer.Date.from_string last_updated
-    | None -> CalendarLib.Date.(make 2008 3 1)
+    | Ok { updated_at; _ } -> CalendarLib.Printer.Date.from_string updated_at
+    | Error _ -> CalendarLib.Date.(make 2008 3 1)
   in
   let finish = CalendarLib.Date.today () in
   let token =
     try Github.Token.of_string (Unix.getenv "GITHUB_TOKEN") with
-    | _ -> raise_s (Sexp.List [ Sexp.Atom "GITHUB_TOKEN not found" ])
+    | _ -> failwith "GITHUB_TOKEN not found"
   in
   let* finish, list = Search.get_all_results ~start ~finish ~token in
-  let repository_urls =
-    List.map list ~f:(fun repo -> repo.repository_clone_url)
+  let repository_list =
+    List.map list
+      ~f:(fun
+           { repository_owner = { user_login = owner; _ }
+           ; repository_name = name
+           ; repository_fork = fork
+           ; repository_clone_url = clone_url
+           ; repository_default_branch = default_branch
+           ; repository_created_at = created_at
+           ; repository_updated_at = updated_at
+           ; _
+           }
+         ->
+        Dataset.make_repository ~owner ~name ~fork ~clone_url ?default_branch
+          ~created_at ~updated_at ())
   in
-  let new_repository_urls =
-    let previous_repository_urls =
+  let new_repository_list =
+    let previous_repository_list =
       match json with
-      | Some { repository_urls; _ } -> repository_urls
-      | None -> []
+      | Ok { repository_list; _ } -> repository_list
+      | Error _ -> []
     in
-    List.append previous_repository_urls repository_urls
+    List.append previous_repository_list repository_list
   in
   let finish = CalendarLib.Printer.Date.to_string finish in
-  Dataset.yojson_of_t
-    { last_updated = finish; repository_urls = new_repository_urls }
-  |> Yojson.Safe.to_string |> Stdlib.print_endline |> Lwt.return
+  if List.length repository_list > 0 then
+    Lwt.return_some
+      (Dataset.make ~updated_at:finish ~repository_list:new_repository_list ())
+  else
+    Lwt.return_none
 
-let () = Lwt_main.run main
+let rec main () =
+  let* dataset = search () in
+  match dataset with
+  | Some dataset -> (
+    let* res = File.write_dataset ~path ~content:dataset in
+    match res with
+    | Ok _ -> main ()
+    | Error _ -> failwith "could not write dataset")
+  | None -> Lwt.return_unit
+
+let () = Lwt_main.run (main ())
