@@ -1,0 +1,4 @@
+(executable
+ (public_name cloner)
+ (name cloner)
+ (libraries fpath bos lwt base trawler))
