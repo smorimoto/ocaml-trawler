@@ -9,7 +9,7 @@ let exec ?cwd ?env ?stdin ?stdout ?stderr argv =
   match process_status with
   | Unix.WEXITED 0 -> Lwt.return_unit
   | Unix.WEXITED n ->
-    failwith (Stdlib.Format.sprintf "exec failed with exit code %i" n)
+    failwith (Caml.Format.sprintf "exec failed with exit code %i" n)
   | _ -> failwith "exec failed"
 
 let clone ~clone_url ~clone_path =
@@ -25,7 +25,7 @@ let cloner ~owner ~name ~clone_url =
   | Ok false -> clone ~clone_url ~clone_path:(Fpath.to_string clone_path)
   | _ ->
     failwith
-      (Stdlib.Format.sprintf "cloner failed with path %s"
+      (Caml.Format.sprintf "cloner failed with path %s"
          (Fpath.to_string clone_path))
 
 let main =

@@ -6,6 +6,7 @@ type repository =
   ; default_branch : string option
   ; created_at : string
   ; updated_at : string
+  ; github_actions : bool
   }
 
 val make_repository :
@@ -16,6 +17,7 @@ val make_repository :
   -> ?default_branch:string
   -> created_at:string
   -> updated_at:string
+  -> github_actions:bool
   -> unit
   -> repository
 

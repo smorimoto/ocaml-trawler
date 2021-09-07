@@ -29,6 +29,7 @@
   base
   bos
   calendar
+  cohttp-lwt-unix
   conf-libev
   github
   github-unix

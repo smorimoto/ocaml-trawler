@@ -4,6 +4,7 @@
   base
   fpath
   calendar
+  cohttp-lwt-unix
   github-unix
   lwt
   lwt.unix

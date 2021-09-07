@@ -20,21 +20,25 @@ let search () =
     | _ -> failwith "GITHUB_TOKEN not found"
   in
   let* finish, list = Search.get_all_results ~start ~finish ~token in
-  let repository_list =
-    List.map list
-      ~f:(fun
-           { repository_owner = { user_login = owner; _ }
-           ; repository_name = name
-           ; repository_fork = fork
-           ; repository_clone_url = clone_url
-           ; repository_default_branch = default_branch
-           ; repository_created_at = created_at
-           ; repository_updated_at = updated_at
-           ; _
-           }
-         ->
-        Dataset.make_repository ~owner ~name ~fork ~clone_url ?default_branch
-          ~created_at ~updated_at ())
+  let* repository_list =
+    Lwt_list.map_s
+      (fun ({ repository_owner = { user_login = owner; _ }
+            ; repository_name = name
+            ; repository_fork = fork
+            ; repository_clone_url = clone_url
+            ; repository_default_branch = default_branch
+            ; repository_created_at = created_at
+            ; repository_updated_at = updated_at
+            ; _
+            } :
+             Github_t.repository) ->
+        let* github_actions =
+          Repo.Contents.exists ~owner ~name ~path:".github/workflows"
+        in
+        Lwt.return
+          (Dataset.make_repository ~owner ~name ~fork ~clone_url ?default_branch
+             ~created_at ~updated_at ~github_actions ()))
+      list
   in
   let new_repository_list =
     let previous_repository_list =
